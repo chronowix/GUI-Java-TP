@@ -18,9 +18,9 @@ public class Dialogue extends JDialog {
 
         this.getContentPane().add(new JScrollPane(textArea), BorderLayout.CENTER);
 
-        JButton fermer = new JButton("Fermer");
-        fermer.addActionListener(event -> this.dispose());
-        this.getContentPane().add(fermer, BorderLayout.SOUTH);
+        JButton close = new JButton("Close");
+        close.addActionListener(event -> this.dispose());
+        this.getContentPane().add(close, BorderLayout.SOUTH);
 
         this.setLocationRelativeTo(parent);
         this.setVisible(true);
