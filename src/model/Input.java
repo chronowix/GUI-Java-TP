@@ -1,19 +1,15 @@
 package model;
 
 public class Input {
-    private String nomRepertoire;
-    private String texteRecherche;
+    private final String directoryName;
+    private final String searchText;
 
-    public Input(String nomRepertoire, String texteRecherche) {
-        this.nomRepertoire = nomRepertoire;
-        this.texteRecherche = texteRecherche;
+    // constructeur et getters
+    public Input(String directoryName, String searchText){
+        this.directoryName = directoryName;
+        this.searchText = searchText;
     }
 
-    public String getNomRepertoire() {
-        return nomRepertoire;
-    }
-
-    public String getTexteRecherche() {
-        return texteRecherche;
-    }
+    public String getDirectoryName(){return directoryName;}
+    public String getSearchText(){return searchText;}
 }

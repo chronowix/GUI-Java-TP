@@ -11,28 +11,28 @@ import java.util.Stack;
 
 public class MyApp extends JFrame {
 
-    private JTextField champRepertoire;
-    private JTextField champTexte;
-    private Stack<Input> historique = new Stack<>();
+    private JTextField directoryField;
+    private JTextField textField;
+    private Stack<Input> history = new Stack<>();
 
     public MyApp() {
-        super("Mon application");
+        super("My App");
         this.setSize(600, 400);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JMenuBar menuBar = new JMenuBar();
         JMenu menuApp = new JMenu("Application");
 
-        JMenuItem itemRetour = new JMenuItem("Retour");
-        itemRetour.setMnemonic('r');
-        itemRetour.addActionListener(event -> restaurerDerniereSaisie());
+        JMenuItem returnItem = new JMenuItem("Return");
+        returnItem.setMnemonic('r');
+        returnItem.addActionListener(event -> restoreLastInput());
 
-        JMenuItem itemQuitter = new JMenuItem("Quitter");
-        itemQuitter.setMnemonic('q');
-        itemQuitter.addActionListener(event -> quitter());
+        JMenuItem exitItem = new JMenuItem("Exit");
+        exitItem.setMnemonic('q');
+        exitItem.addActionListener(event -> exit());
 
-        menuApp.add(itemRetour);
-        menuApp.add(itemQuitter);
+        menuApp.add(returnItem);
+        menuApp.add(exitItem);
         menuBar.add(menuApp);
         this.setJMenuBar(menuBar);
 
@@ -44,82 +44,90 @@ public class MyApp extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0;
-        panel.add(new JLabel("Répertoire recherche : "), gbc);
+        panel.add(new JLabel("Search directory: "), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 1;
-        champRepertoire = new JTextField(20);
-        panel.add(champRepertoire, gbc);
+        directoryField = new JTextField(20);
+        panel.add(directoryField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.weightx = 0;
-        panel.add(new JLabel("Texte recherché : "), gbc);
+        panel.add(new JLabel("Search text: "), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 1;
         gbc.weightx = 1;
-        champTexte = new JTextField(20);
-        panel.add(champTexte, gbc);
+        textField = new JTextField(20);
+        panel.add(textField, gbc);
 
         this.getContentPane().add(panel, BorderLayout.CENTER);
 
-        JButton boutonAppliquer = new JButton("Appliquer");
-        boutonAppliquer.addActionListener(event -> appliquer());
-        this.getContentPane().add(boutonAppliquer, BorderLayout.SOUTH);
+        JButton applyButton = new JButton("Apply");
+        applyButton.addActionListener(event -> apply());
+        this.getContentPane().add(applyButton, BorderLayout.SOUTH);
     }
 
-    private void sauvegarderEtat(String rep, String txt) {
-        historique.add(new Input(rep, txt));
+    private void saveState(String rep, String txt) {
+        history.add(new Input(rep, txt));
     }
 
-    private void restaurerDerniereSaisie() {
-        if (!historique.isEmpty()) {
-            Input s = historique.removeLast();
-            champRepertoire.setText(s.getNomRepertoire());
-            champTexte.setText(s.getTexteRecherche());
+    private void restoreLastInput() {
+        if (!history.isEmpty()) {
+            Input s = history.removeLast();
+            directoryField.setText(s.getDirectoryName());
+            textField.setText(s.getSearchText());
         } else {
-            new Dialogue(this, "Aucun historique disponible !");
+            new Dialogue(this, "No history available!");
         }
     }
 
-    private void quitter() {
+    private void exit() {
         this.dispose();
     }
 
-    private void appliquer() {
-        String repertoire = champRepertoire.getText();
-        String texte = champTexte.getText();
+    private void apply() {
+        String directory = directoryField.getText();
+        String text = textField.getText();
 
-        if (repertoire.isEmpty() || texte.isEmpty()) {
-            new Dialogue(this, "Erreur : veuillez remplir les deux champs !");
+        if (directory.isEmpty() || text.isEmpty()) {
+            new Dialogue(this, "Error: please fill both fields!");
             return;
         }
 
-        sauvegarderEtat(repertoire, texte);
+        saveState(directory, text);
 
-        // TODO: List<String> resultats = Recherche.getInstance().rechercher(repertoire, texte);
-        // TODO: resultats.forEach(System.out::println);
-        // TODO: exporterResultats(resultats);
+        // Logic search using ForkJoinPool
+        java.util.concurrent.ForkJoinPool pool = new java.util.concurrent.ForkJoinPool();
+        model.SearchTask task = new model.SearchTask(directory, text);
+        List<String> results = pool.invoke(task);
 
-        new Dialogue(this, "Recherche lancée !\nRépertoire : " + repertoire + "\nTexte : " + texte);
+        // Output results to console
+        System.out.println("--- Search Results (" + results.size() + " matches found) ---");
+        results.forEach(System.out::println);
+
+        // Export results
+        exportResults(results);
+
+        new Dialogue(this, "Search completed!\n" + results.size() + " matches found.\nResults exported.");
     }
 
-    private void exporterResultats(List<String> resultats) {
-        String nomFichier = "out.txt";
+    private void exportResults(List<String> results) {
+        String fileName = "output.txt";
         if (FormatExport.class.isAnnotationPresent(Output.class)) {
             Output ann = FormatExport.class.getAnnotation(Output.class);
-            nomFichier = ann.value();
+            fileName = ann.value();
         }
 
-        try (PrintWriter writer = new PrintWriter(new FileWriter(nomFichier))) {
-            resultats.stream()
+        try (PrintWriter writer = new PrintWriter(new FileWriter(fileName))) {
+            results.stream()
                 .map(String::toLowerCase)
                 .forEach(writer::println);
-            System.out.println("Export réussi dans : " + nomFichier);
+            System.out.println("Export successful in: " + fileName);
         } catch (IOException e) {
-            new Dialogue(this, "Erreur lors de l'export : " + e.getMessage());
+            new Dialogue(this, "Error during export: " + e.getMessage());
         }
     }
 }
