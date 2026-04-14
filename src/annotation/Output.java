@@ -6,6 +6,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public interface Output {
-    // TODO: Ajouter un attribut pour stocker le nom du fichier (par défaut "out.txt")
+public @interface Output {
+    String value() default "out.txt";
 }
