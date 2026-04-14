@@ -1,12 +1,28 @@
 package gui;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class Dialogue extends JDialog {
-    // TODO: Ajouter une JTextArea non éditable
+    private JTextArea textArea;
 
-    public Dialogue(JFrame parent, String msg){
-        // TODO: Configurer la dialogue (titre, modalité, layout)
-        // TODO: Ajouter le message dans la zone de texte
+    public Dialogue(JFrame parent, String msg) {
+        super(parent, true);
+        this.setTitle("Information");
+        this.setSize(400, 250);
+
+        textArea = new JTextArea(msg);
+        textArea.setEditable(false);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+
+        this.getContentPane().add(new JScrollPane(textArea), BorderLayout.CENTER);
+
+        JButton fermer = new JButton("Fermer");
+        fermer.addActionListener(event -> this.dispose());
+        this.getContentPane().add(fermer, BorderLayout.SOUTH);
+
+        this.setLocationRelativeTo(parent);
+        this.setVisible(true);
     }
 }

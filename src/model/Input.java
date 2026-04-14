@@ -1,7 +1,19 @@
 package model;
 
 public class Input {
-    // TODO: Ajouter les attributs nomRepertoire et texteRecherche
+    private String nomRepertoire;
+    private String texteRecherche;
 
-    // TODO: Ajouter le constructeur et les getters
+    public Input(String nomRepertoire, String texteRecherche) {
+        this.nomRepertoire = nomRepertoire;
+        this.texteRecherche = texteRecherche;
+    }
+
+    public String getNomRepertoire() {
+        return nomRepertoire;
+    }
+
+    public String getTexteRecherche() {
+        return texteRecherche;
+    }
 }
